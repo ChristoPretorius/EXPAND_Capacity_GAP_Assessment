@@ -789,6 +789,13 @@ async function sendEmails(d,oPct,pResults,priorityGaps,profile,ans,scored){
     '</td></tr>'+
     '</table></td></tr></table></body></html>';
 
+  // Variables for Christo email
+  const pillarBars=pResults.map(p=>{const pr=100-p.pct;const col=pr>=70?'#d1ad0e':pr>=50?'#e6a817':'#e74c3c';return '<tr><td style="padding:6px 14px;font-size:13px;color:#132540;border-bottom:1px solid #eef2f8"><strong>'+p.name+'</strong></td><td style="padding:6px 14px;font-size:13px;font-weight:700;color:'+col+'">'+pr+'% readiness</td></tr>';}).join('');
+  const gapCards=priorityGaps.map((g,i)=>'<tr><td style="padding:10px 14px;border-bottom:1px solid #e0e7f0;vertical-align:top"><span style="display:inline-block;background:#d1ad0e;color:#132540;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px">PRIORITY '+(i+1)+'</span><br><strong style="color:#132540;font-size:14px">'+g.q.gap.name+'</strong><br><span style="color:#4a6080;font-size:13px">'+g.q.gap.insight+'</span></td></tr>').join('');
+  const qaRows=d.qs.map((q,i)=>'<tr><td style="padding:6px 10px;font-size:12px;color:#132540;border-bottom:1px solid #eef2f8;background:'+(i%2===0?'#f8f9fc':'#fff')+'"><strong>Q'+(i+1)+'</strong> '+q.txt+'</td><td style="padding:6px 10px;font-size:12px;color:#4a6080;border-bottom:1px solid #eef2f8;background:'+(i%2===0?'#f8f9fc':'#fff')+'">'+( ans[i]!==null?['A','B','C','D'][ans[i]]+': '+q.opts[ans[i]]:'—')+'</td></tr>').join('');
+  const coachingBanner=coachingAnsweredD?'<tr><td style="padding:0 28px 16px"><div style="background:#d1ad0e;border-radius:8px;padding:14px 18px"><p style="color:#132540;font-size:13px;font-weight:700;margin:0">⭐ High coaching intent — answered D on Q13 coaching question</p></div></td></tr>':'';
+
+
   const christoHTML='<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>EXPAND Results</title></head>'+
     '<body style="margin:0;padding:0;background:#f4f7fa;font-family:Arial,sans-serif">'+
     '<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:20px 12px">'+
@@ -800,7 +807,8 @@ async function sendEmails(d,oPct,pResults,priorityGaps,profile,ans,scored){
     '<table width="100%" cellpadding="0" cellspacing="0"><tr>'+
     '<td style="font-size:13px;color:#132540"><strong>Email:</strong> <a href="mailto:'+leadData.email+'" style="color:#d1ad0e;text-decoration:none">'+leadData.email+'</a></td>'+
     '<td style="font-size:13px;color:#132540"><strong>Cell:</strong> <a href="tel:'+leadData.cell+'" style="color:#d1ad0e;text-decoration:none">'+leadData.cell+'</a></td>'+
-    '<td style="font-size:13px;color:#132540"><strong>City:</strong> '+(leadData.city||'')+'</td>'+
+    '<td style="font-size:13px;color:#132540"><strong>City:</strong> '+(leadData.city||'')+
+    '<td style="font-size:13px;color:#132540"><strong>Province:</strong> '+(leadData.province||'')+'</td>'+
     '<td style="font-size:13px;color:#132540"><strong>Source:</strong> '+(leadData.source||'')+'</td>'+
     '</tr></table></td></tr>'+
 
@@ -872,6 +880,7 @@ async function sendEmails(d,oPct,pResults,priorityGaps,profile,ans,scored){
           template_params:{to_email:toEmail,subject:subject,html_body:htmlBody}})
       });
       const txt=await r.text();
+      console.log('EmailJS response:',r.status,txt);
       if(!r.ok){
         console.error('EmailJS error',r.status,txt);
         const errDiv=document.getElementById('email-status');
